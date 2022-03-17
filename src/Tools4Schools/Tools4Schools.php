@@ -9,9 +9,11 @@
 namespace Tools4Schools\SDK;
 
 
+use GuzzleHttp\Client;
 use Tools4Schools\SDK\Graph\Model;
 use Tools4Schools\SDK\Oauth2\AuthTokenMiddleware;
 use Tools4Schools\SDK\Oauth2\Client as Oauth2Client;
+use Tools4Schools\SDK\Resources\ResourceModel;
 
 class Tools4Schools
 {
@@ -20,28 +22,9 @@ class Tools4Schools
      *
      * @const string
      */
-    const VERSION = '0.0.2';
+    const VERSION = '0.0.3';
 
-    /**
-     * Default API version for requests.
-     *
-     * @const string
-     */
-    const DEFAULT_GRAPH_VERSION = 'v0.1';
 
-    /**
-     * The url to the production server
-     *
-     * @const string
-     */
-    const BASE_API_URL = 'https://api.tools4schools.ie';
-
-    /**
-     * The url to the staging server
-     *
-     * @const string
-     */
-    const BASE_API_URL_BETA = 'https://staging.api.tools4schools.ie';
 
     /**
      * Toggle to use staging api url.
@@ -53,7 +36,7 @@ class Tools4Schools
     /**
      * The main guzzle connection
      *
-     * @var \GuzzleConnection the graph client
+     * @var \GuzzleConnection the api client
      */
     protected $connection;
 
@@ -78,11 +61,12 @@ class Tools4Schools
      */
     protected $tenant;
 
-    public function __construct(array $config = [])
+    public function __construct(array $options = [])
     {
-
+        $this->options = new Options($options);
+/*
         $this->config = array_merge([
-            'default_graph_version' => static::DEFAULT_GRAPH_VERSION,
+            'default_graph_version' => static::DEFAULT_API_VERSION,
             'enable_beta_mode' => false,
         ], $config);
 
@@ -95,10 +79,12 @@ class Tools4Schools
         $this->connection->addMiddleware(new AuthTokenMiddleware($this->oauth2Client));
 
 
-        Model::setConnection($this->connection);
-
-
+        //Model::setConnection($this->connection);
+*/
+        ResourceModel::setClient($this->client());
     }
+
+
 
 
     /**
@@ -113,5 +99,15 @@ class Tools4Schools
 
     public function setAccessToken($access_token){
         $this->config['access_token'] = $access_token;
+    }
+
+   /* public function user()
+    {
+        return User($this->connection->get('me')['data']);
+    }*/
+
+    public function client()
+    {
+        return $this->options->getClient();
     }
 }
