@@ -2,7 +2,11 @@
 
 namespace Tools4Schools\SDK;
 
+use Http\Discovery\Psr17FactoryDiscovery;
+use Psr\Http\Message\UriFactoryInterface;
+use Psr\Http\Message\UriInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Tools4Schools\SDK\Clients\ClientBuilder;
 use Tools4Schools\SDK\Clients\Guzzle;
 
 class Options
@@ -42,21 +46,23 @@ class Options
      *
      * @param OptionsResolver $resolver
      */
-    public function ConfigureOptions(OptionsResolver $resolver): void
+    protected function ConfigureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'client' => new Guzzle(),
             'default_graph_version' => static::DEFAULT_API_VERSION,
             'enable_beta_mode' => false,
-            'base_url' => static::BASE_API_URL
+            'base_url' => static::BASE_API_URL,
+            'client_builder' => new ClientBuilder(),
+            'uri_factory' => Psr17FactoryDiscovery::findUriFactory(),
         ]);
 
         $resolver->setAllowedTypes('base_url', 'string');
-        //$resolver->setAllowedTypes('client_builder', ClientBuilder::class);
-        //$resolver->setAllowedTypes('uri_factory', UriFactoryInterface::class);
+        $resolver->setAllowedTypes('client_builder', ClientBuilder::class);
+        $resolver->setAllowedTypes('uri_factory', UriFactoryInterface::class);
     }
 
-    protected function getURL()
+   /* protected function getURL()
     {
         return $this->options['enable_beta_mode'] ? static::BASE_API_URL_BETA : $this->options['base_url'];
     }
@@ -64,5 +70,22 @@ class Options
     public function getClient()
     {
         return $this->options['client'];
+    }*/
+
+    public function getClientBuilder(): ClientBuilder
+    {
+
+        return $this->options['client_builder'];
+    }
+
+    public function getUriFactory(): UriFactoryInterface
+    {
+
+        return $this->options['uri_factory'];
+    }
+
+    public function getUri(): UriInterface
+    {
+        return $this->getUriFactory()->createUri($this->options['base_url']);
     }
 }
